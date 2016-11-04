@@ -1,5 +1,6 @@
 package com.zmxv.RNSound;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -23,13 +24,13 @@ import java.util.Map;
 @ReactModule(name="RNSound")
 class RNSoundModule extends ReactContextBaseJavaModule {
 
+    @SuppressLint("UseSparseArrays")
     private static final Map<Integer, MediaPlayer> playerPool = new HashMap<>();
 
     private static final String TAG = "RNSound";
 
-    public RNSoundModule(ReactApplicationContext reactContext) {
+    RNSoundModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        Log.d(TAG, "RNSoundModule: called");
     }
 
     @Override
@@ -39,7 +40,6 @@ class RNSoundModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void prepare(final String fileName, final Integer key, final Callback callback) {
-        Log.d(TAG, "prepare: called");
         MediaPlayer player = createMediaPlayer(fileName);
         if (player == null) {
             WritableMap e = Arguments.createMap();
@@ -54,7 +54,7 @@ class RNSoundModule extends ReactContextBaseJavaModule {
         callback.invoke(null, props);
     }
 
-    protected MediaPlayer createMediaPlayer(final String fileName) {
+    private MediaPlayer createMediaPlayer(final String fileName) {
         Context context = getReactApplicationContext();
 
         int res = context.getResources().getIdentifier(fileName, "raw", context.getPackageName());
