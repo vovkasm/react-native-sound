@@ -23,3 +23,5 @@ DerivedData
 *.ipa
 *.xcuserstate
 
+# Android Studio
+*.iml
