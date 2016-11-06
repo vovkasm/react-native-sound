@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.name                = "RNSound"
   s.version             = package['version']
   s.summary             = package['description']
-  s.homepage            = "https://github.com/zmxv/react-native-sound"
+  s.homepage            = "https://github.com/vovkasm/react-native-sound"
   s.license             = package['license']
   s.author              = package['author']
   s.source              = { :git => package['repository']['url'], :tag => "v#{s.version}" }
