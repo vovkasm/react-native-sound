@@ -6,8 +6,8 @@
     "start": "node node_modules/react-native/local-cli/cli.js start"
   },
   "dependencies": {
+    "@vovkasm/react-native-sound": "file:../../",
     "react": "15.3.2",
-    "react-native": "^0.36.1",
-    "@vovkasm/react-native-sound": "file:../../"
+    "react-native": "^0.36.1"
   }
 }
