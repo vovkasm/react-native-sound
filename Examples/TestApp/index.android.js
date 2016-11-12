@@ -1,10 +1,18 @@
 import React, { Component } from 'react'
-import { AppRegistry, Text, View } from 'react-native'
+import { AppRegistry, Button, Text, View } from 'react-native'
+
+import Sound from '@vovkasm/react-native-sound'
 
 class TestApp extends Component {
+  componentDidMount() {
+    this.sample1 = new Sound('sample1.wav')
+  }
   render() {
     return <View>
-      <Text>Hello!</Text>
+      <Text>Play sample1.wav</Text>
+      <Button title="Play" onPress={()=>{
+        this.sample1.play()
+      }}></Button>
     </View>
   }
 }
