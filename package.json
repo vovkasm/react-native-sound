@@ -1,6 +1,6 @@
 {
   "name": "@vovkasm/react-native-sound",
-  "version": "1.8.4",
+  "version": "0.0.1",
   "description": "React Native module for playing sound on iOS and Android",
   "main": "sound.js",
   "homepage": "https://github.com/vovkasm/react-native-sound",
@@ -25,6 +25,8 @@
     "eslint": "^3.3.1",
     "eslint-plugin-classes": "^0.1.1",
     "eslint-plugin-import": "^2.0",
+    "eslint-plugin-react": "^6.1.2",
+    "eslint-plugin-react-native": "^2.0.0",
     "react-native": "^0.37.0"
   }
 }
