@@ -1,81 +1,81 @@
-import { NativeModules } from 'react-native';
+import { NativeModules } from 'react-native'
 
-const RNSound = NativeModules.RNSound;
+const RNSound = NativeModules.RNSound
 
-var IsAndroid = RNSound.IsAndroid;
+var IsAndroid = RNSound.IsAndroid
 
-var resolveAssetSource = require("react-native/Libraries/Image/resolveAssetSource");
-var nextKey = 0;
+var resolveAssetSource = require('react-native/Libraries/Image/resolveAssetSource')
+var nextKey = 0
 
 function isRelativePath(path) {
-  return !/^\//.test(path);
+  return !/^\//.test(path)
 }
 
 class Sound {
   constructor(filename, basePath, onError) {
-    var asset = resolveAssetSource(filename);
+    var asset = resolveAssetSource(filename)
     if (asset) {
-      this._filename = asset.uri;
-      onError = basePath;
+      this._filename = asset.uri
+      onError = basePath
     } else {
-      this._filename = basePath ? basePath + '/' + filename : filename;
+      this._filename = basePath ? basePath + '/' + filename : filename
 
       if (IsAndroid && !basePath && isRelativePath(filename)) {
-        this._filename = filename.toLowerCase().replace(/\.[^.]+$/, '');
+        this._filename = filename.toLowerCase().replace(/\.[^.]+$/, '')
       }
     }
 
-    this._loaded = false;
-    this._key = nextKey++;
-    this._duration = -1;
-    this._numberOfChannels = -1;
-    this._volume = 1;
-    this._pan = 0;
-    this._numberOfLoops = 0;
+    this._loaded = false
+    this._key = nextKey++
+    this._duration = -1
+    this._numberOfChannels = -1
+    this._volume = 1
+    this._pan = 0
+    this._numberOfLoops = 0
     RNSound.prepare(this._filename, this._key, (error, props) => {
       if (props) {
         if (typeof props.duration === 'number') {
-          this._duration = props.duration;
+          this._duration = props.duration
         }
         if (typeof props.numberOfChannels === 'number') {
-          this._numberOfChannels = props.numberOfChannels;
+          this._numberOfChannels = props.numberOfChannels
         }
       }
       if (error === null) {
-        this._loaded = true;
+        this._loaded = true
       }
-      onError && onError(error);
-    });
+      onError && onError(error)
+    })
   }
 
   isLoaded() { return this._loaded }
   play(onEnd) {
     if (this._loaded) {
       RNSound.play(this._key, function(successfully) {
-        onEnd && onEnd(successfully);
-      });
+        onEnd && onEnd(successfully)
+      })
     }
-    return this;
+    return this
   }
   pause() {
     if (this._loaded) {
-      RNSound.pause(this._key);
+      RNSound.pause(this._key)
     }
-    return this;
+    return this
   }
 
   stop() {
     if (this._loaded) {
-      RNSound.stop(this._key);
+      RNSound.stop(this._key)
     }
-    return this;
+    return this
   }
 
   release() {
     if (this._loaded) {
-      RNSound.release(this._key);
+      RNSound.release(this._key)
     }
-    return this;
+    return this
   }
 
   getDuration() { return this._duration }
@@ -85,74 +85,74 @@ class Sound {
   getVolume() { return this._volume }
 
   setVolume(value) {
-    this._volume = value;
+    this._volume = value
     if (this._loaded) {
       if (IsAndroid) {
-        RNSound.setVolume(this._key, value, value);
+        RNSound.setVolume(this._key, value, value)
       } else {
-        RNSound.setVolume(this._key, value);
+        RNSound.setVolume(this._key, value)
       }
     }
-    return this;
+    return this
   }
 
   getPan() { return this._pan }
 
   setPan(value) {
     if (this._loaded) {
-      RNSound.setPan(this._key, this._pan = value);
+      RNSound.setPan(this._key, this._pan = value)
     }
-    return this;
+    return this
   }
 
   getNumberOfLoops() { return this._numberOfLoops }
 
   setNumberOfLoops(value) {
-    this._numberOfLoops = value;
+    this._numberOfLoops = value
     if (this._loaded) {
       if (IsAndroid) {
-        RNSound.setLooping(this._key, !!value);
+        RNSound.setLooping(this._key, !!value)
       } else {
-        RNSound.setNumberOfLoops(this._key, value);
+        RNSound.setNumberOfLoops(this._key, value)
       }
     }
-    return this;
+    return this
   }
 
   getCurrentTime(callback) {
     if (this._loaded) {
-      RNSound.getCurrentTime(this._key, callback);
+      RNSound.getCurrentTime(this._key, callback)
     }
   }
 
   setCurrentTime(value) {
     if (this._loaded) {
-      RNSound.setCurrentTime(this._key, value);
+      RNSound.setCurrentTime(this._key, value)
     }
-    return this;
+    return this
   }
 
   // ios only
   setCategory(value) {
-    RNSound.setCategory(this._key, value);
+    RNSound.setCategory(this._key, value)
   }
 }
 
 Sound.enable = function(enabled) {
-  RNSound.enable(enabled);
-};
+  RNSound.enable(enabled)
+}
 
 Sound.enableInSilenceMode = function(enabled) {
   if (!IsAndroid) {
-    RNSound.enableInSilenceMode(enabled);
+    RNSound.enableInSilenceMode(enabled)
   }
-};
+}
 
-Sound.enable(true);
+Sound.enable(true)
 
-Sound.MAIN_BUNDLE = RNSound.MainBundlePath;
-Sound.DOCUMENT = RNSound.NSDocumentDirectory;
-Sound.LIBRARY = RNSound.NSLibraryDirectory;
-Sound.CACHES = RNSound.NSCachesDirectory;
+Sound.MAIN_BUNDLE = RNSound.MainBundlePath
+Sound.DOCUMENT = RNSound.NSDocumentDirectory
+Sound.LIBRARY = RNSound.NSLibraryDirectory
+Sound.CACHES = RNSound.NSCachesDirectory
 
 export default Sound
