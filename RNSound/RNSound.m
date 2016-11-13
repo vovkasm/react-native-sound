@@ -1,9 +1,19 @@
 #import "RNSound.h"
+#import "RCTConvert.h"
 #import "RCTUtils.h"
 
 @implementation RNSound {
   NSMutableDictionary* _playerPool;
   NSMutableDictionary* _callbackPool;
+  NSURLSession* _urlSession;
+}
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    _urlSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+  }
+  return self;
 }
 
 -(NSMutableDictionary*) playerPool {
@@ -89,21 +99,31 @@ RCT_EXPORT_METHOD(enableInSilenceMode:(BOOL)enabled) {
   [session setActive: enabled error: nil];
 }
 
-RCT_EXPORT_METHOD(prepare:(NSString*)fileName withKey:(nonnull NSNumber*)key
+RCT_EXPORT_METHOD(prepare:(NSDictionary*)source withKey:(nonnull NSNumber*)key
                   withCallback:(RCTResponseSenderBlock)callback) {
-  NSError* error;
-  AVAudioPlayer* player = [[AVAudioPlayer alloc]
-                           initWithContentsOfURL:[NSURL fileURLWithPath:[fileName stringByRemovingPercentEncoding]]
-                           error:&error];
-  if (player) {
+
+  NSURLRequest *request = [RCTConvert NSURLRequest:source];
+
+  NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    if (error) {
+      callback(@[RCTJSErrorFromNSError(error)]);
+      return;
+    }
+
+    AVAudioPlayer* player = [[AVAudioPlayer alloc] initWithData:data error:&error];
+    if (player == nil) {
+      callback(@[RCTJSErrorFromNSError(error)]);
+      return;
+    }
+
     player.delegate = self;
     [player prepareToPlay];
     [[self playerPool] setObject:player forKey:key];
     callback(@[[NSNull null], @{@"duration": @(player.duration),
                                 @"numberOfChannels": @(player.numberOfChannels)}]);
-  } else {
-    callback(@[RCTJSErrorFromNSError(error)]);
-  }
+
+  }];
+  [task resume];
 }
 
 RCT_EXPORT_METHOD(play:(nonnull NSNumber*)key withCallback:(RCTResponseSenderBlock)callback) {
