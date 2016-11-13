@@ -1,29 +1,15 @@
 import { NativeModules } from 'react-native'
 
+const resolveAssetSource = require('react-native/Libraries/Image/resolveAssetSource')
+
 const RNSound = NativeModules.RNSound
+const IsAndroid = RNSound.IsAndroid
 
-var IsAndroid = RNSound.IsAndroid
-
-var resolveAssetSource = require('react-native/Libraries/Image/resolveAssetSource')
-var nextKey = 0
-
-function isRelativePath(path) {
-  return !/^\//.test(path)
-}
+let nextKey = 0
 
 class Sound {
-  constructor(filename, basePath, onError) {
-    var asset = resolveAssetSource(filename)
-    if (asset) {
-      this._filename = asset.uri
-      onError = basePath
-    } else {
-      this._filename = basePath ? basePath + '/' + filename : filename
-
-      if (IsAndroid && !basePath && isRelativePath(filename)) {
-        this._filename = filename.toLowerCase().replace(/\.[^.]+$/, '')
-      }
-    }
+  constructor(source, onError) {
+    this._source = resolveAssetSource(source)
 
     this._loaded = false
     this._key = nextKey++
@@ -32,7 +18,7 @@ class Sound {
     this._volume = 1
     this._pan = 0
     this._numberOfLoops = 0
-    RNSound.prepare(this._filename, this._key, (error, props) => {
+    RNSound.prepare(this._source, this._key, (error, props) => {
       if (props) {
         if (typeof props.duration === 'number') {
           this._duration = props.duration
