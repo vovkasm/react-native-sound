@@ -1,7 +1,8 @@
 package com.zmxv.RNSound;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.Resources;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -18,7 +19,6 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.module.annotations.ReactModule;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,14 +41,12 @@ class RNSoundModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void prepare(final ReadableMap source, final Integer key, final Callback callback) {
-        Log.d(TAG, "Got source " + source.toString());
         final Uri uri = Uri.parse(source.getString("uri"));
 
         MediaPlayer player = new MediaPlayer();
         player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
-                Log.d(TAG, "onPrepared " + uri.toString());
                 WritableMap props = Arguments.createMap();
                 props.putDouble("duration", mp.getDuration() * .001);
                 callback.invoke(null, props);
@@ -62,34 +60,67 @@ class RNSoundModule extends ReactContextBaseJavaModule {
             }
         });
 
-        try {
-            player.setDataSource(uri.toString());
+        String dataSourceUriString = uri.toString();
+        if (uri.isRelative()) {
+            String name = uri.getPath();
+            if (name.indexOf(".") > 0) {
+                name = name.substring(0, name.lastIndexOf("."));
+            }
+
+            ReactApplicationContext context = getReactApplicationContext();
+            Resources res = context.getResources();
+
+            final String packageName = context.getPackageName();
+            String type = "raw";
+            int id = 0;
+
+            id = res.getIdentifier(name, type, packageName);
+            if (id == 0) {
+                // Because strange programmers at Facebook ((
+                // react-native packager copy all types of resources to drawables
+                type = "drawable";
+                id = res.getIdentifier(name, type, packageName);
+            }
+            if (id == 0) {
+                type = "unknown";
+                String msg = "Can't find resource for " + type + "/" + name;
+                Log.e(TAG, msg);
+                callback.invoke(createJSError(msg));
+                return;
+            }
+
+            try {
+                AssetFileDescriptor fd = res.openRawResourceFd(id);
+                player.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+                fd.close();
+            }
+            catch (Exception e) {
+                Log.e(TAG, "can't set data source: " + e.toString());
+                callback.invoke(createJSError(e.getMessage()));
+                return;
+            }
         }
-        catch (Exception e) {
-            Log.e(TAG, "can't set data source: " + e.toString());
-            WritableMap jsError = Arguments.createMap();
-            jsError.putInt("code", -1);
-            jsError.putString("message", e.getMessage());
-            callback.invoke(jsError);
-            return;
+        else {
+            try {
+                player.setDataSource(uri.toString());
+            }
+            catch (Exception e) {
+                Log.e(TAG, "can't set data source: " + e.toString());
+                callback.invoke(createJSError(e.getMessage()));
+                return;
+            }
         }
+
+
         playerPool.put(key, player);
         player.prepareAsync();
     }
 
-    private MediaPlayer createMediaPlayer(final String fileName) {
-        Context context = getReactApplicationContext();
-
-        int res = context.getResources().getIdentifier(fileName, "raw", context.getPackageName());
-        if (res != 0) {
-            return MediaPlayer.create(context, res);
-        }
-        File file = new File(fileName);
-        if (file.exists()) {
-            Uri uri = Uri.fromFile(file);
-            return MediaPlayer.create(context, uri);
-        }
-        return null;
+    private WritableMap createJSError(final String message) {
+        WritableMap err = Arguments.createMap();
+        err.putInt("code", -1);
+        err.putString("message", message);
+        return err;
     }
 
     @ReactMethod
@@ -182,7 +213,7 @@ class RNSoundModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void enable(final Boolean enabled) {
-        Log.d(TAG, "enable called with arg=" + enabled.toString());
+        // stub
     }
 
     @Override
