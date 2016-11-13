@@ -1,5 +1,0 @@
-rootProject.name = 'TestApp'
-
-include ':app'
-include ':@vovkasm/react-native-sound'
-project(':@vovkasm/react-native-sound').projectDir = new File(rootProject.projectDir, '../node_modules/@vovkasm/react-native-sound/android')
