@@ -27,7 +27,7 @@
 /* Begin PBXFileReference section */
 		19825A1E1BD4A89800EE0337 /* libRNSound.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNSound.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		19825A211BD4A89800EE0337 /* RNSound.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNSound.h; sourceTree = "<group>"; };
-		19825A231BD4A89800EE0337 /* RNSound.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNSound.m; sourceTree = "<group>"; };
+		19825A231BD4A89800EE0337 /* RNSound.m */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.c.objc; path = RNSound.m; sourceTree = "<group>"; tabWidth = 2; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,7 +47,9 @@
 				19825A201BD4A89800EE0337 /* RNSound */,
 				19825A1F1BD4A89800EE0337 /* Products */,
 			);
+			indentWidth = 2;
 			sourceTree = "<group>";
+			tabWidth = 2;
 		};
 		19825A1F1BD4A89800EE0337 /* Products */ = {
 			isa = PBXGroup;
@@ -93,7 +95,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0700;
-				ORGANIZATIONNAME = zmxv;
+				ORGANIZATIONNAME = vovkasm;
 				TargetAttributes = {
 					19825A1D1BD4A89800EE0337 = {
 						CreatedOnToolsVersion = 7.0.1;
