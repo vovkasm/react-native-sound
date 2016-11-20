@@ -41,20 +41,17 @@ class Sound {
         onEnd && onEnd(successfully)
       })
     }
-    return this
   }
   pause() {
     if (this.isLoaded()) {
       RNSound.pause(this._key)
     }
-    return this
   }
 
   stop() {
     if (this.isLoaded()) {
       RNSound.stop(this._key)
     }
-    return this
   }
 
   release() {
@@ -62,7 +59,6 @@ class Sound {
       RNSound.release(this._key)
       delete this._key
     }
-    return this
   }
 
   getDuration() { return this._duration }
