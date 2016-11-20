@@ -6,6 +6,23 @@ const RNSound = NativeModules.RNSound
 const IsAndroid = RNSound.IsAndroid
 
 class Sound {
+  static load(source) {
+    resolvedSource = resolveAssetSource(source)
+    return RNSound.prepare(resolvedSource).then(function(props) {
+      return new Sound(resolvedSource, props)
+    })
+  }
+
+  static enable(enabled) {
+    RNSound.enable(enabled)
+  }
+
+  static enableInSilenceMode(enabled) {
+    if (!IsAndroid) {
+      RNSound.enableInSilenceMode(enabled)
+    }
+  }
+
   constructor(source, props) {
     this._source = source
     this._key = props.key
@@ -16,18 +33,8 @@ class Sound {
     this._numberOfLoops = 0
   }
 
-  static load(source) {
-    resolvedSource = resolveAssetSource(source)
-    return RNSound.prepare(resolvedSource).then(props => {
-      sound = new Sound(resolvedSource, props)
-      sound._key = props.key
-      sound._duration = props.duration
-      sound._numberOfChannels = props.numberOfChannels
-      return sound
-    })
-  }
-
   isLoaded() { return this._key !== undefined }
+
   play(onEnd) {
     if (this.isLoaded()) {
       RNSound.play(this._key, function(successfully) {
@@ -111,16 +118,6 @@ class Sound {
   // ios only
   setCategory(value) {
     RNSound.setCategory(this._key, value)
-  }
-}
-
-Sound.enable = function(enabled) {
-  RNSound.enable(enabled)
-}
-
-Sound.enableInSilenceMode = function(enabled) {
-  if (!IsAndroid) {
-    RNSound.enableInSilenceMode(enabled)
   }
 }
 
