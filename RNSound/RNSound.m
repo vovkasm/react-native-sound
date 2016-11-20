@@ -1,10 +1,17 @@
 #import "RNSound.h"
 #import "RCTConvert.h"
+#import "RCTBridgeModule.h"
 #import "RCTUtils.h"
 
+@interface RNSound () <RCTBridgeModule, AVAudioPlayerDelegate>
+
+@property (nonatomic) NSMutableDictionary* playerPool;
+@property (nonatomic) NSMutableDictionary* callbackPool;
+@property (nonatomic) NSURLSession* urlSession;
+
+@end
+
 @implementation RNSound {
-  NSMutableDictionary* _playerPool;
-  NSMutableDictionary* _callbackPool;
   NSURLSession* _urlSession;
 }
 
@@ -12,22 +19,10 @@
   self = [super init];
   if (self) {
     _urlSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    _playerPool = [NSMutableDictionary dictionary];
+    _callbackPool = [NSMutableDictionary dictionary];
   }
   return self;
-}
-
--(NSMutableDictionary*) playerPool {
-  if (!_playerPool) {
-    _playerPool = [NSMutableDictionary new];
-  }
-  return _playerPool;
-}
-
--(NSMutableDictionary*) callbackPool {
-  if (!_callbackPool) {
-    _callbackPool = [NSMutableDictionary new];
-  }
-  return _callbackPool;
 }
 
 -(AVAudioPlayer*) playerForKey:(nonnull NSNumber*)key {
