@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -26,7 +27,9 @@ import java.util.Map;
 class RNSoundModule extends ReactContextBaseJavaModule {
 
     @SuppressLint("UseSparseArrays")
-    private static final Map<Integer, MediaPlayer> playerPool = new HashMap<>();
+    private final Map<Integer, MediaPlayer> playerPool = new HashMap<>();
+
+    private int lastKey = 1;
 
     private static final String TAG = "RNSound";
 
@@ -40,16 +43,21 @@ class RNSoundModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void prepare(final ReadableMap source, final Integer key, final Callback callback) {
+    public void prepare(final ReadableMap source, final Promise promise) {
         final Uri uri = Uri.parse(source.getString("uri"));
+        lastKey++;
+        final int key = lastKey;
 
         MediaPlayer player = new MediaPlayer();
         player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                playerPool.put(key, mp);
                 WritableMap props = Arguments.createMap();
+                props.putInt("key", key);
                 props.putDouble("duration", mp.getDuration() * .001);
-                callback.invoke(null, props);
+                props.putInt("numberOfChannels", -1);
+                promise.resolve(props);
             }
         });
         player.setOnErrorListener(new OnErrorListener() {
@@ -85,7 +93,7 @@ class RNSoundModule extends ReactContextBaseJavaModule {
                 type = "unknown";
                 String msg = "Can't find resource for " + type + "/" + name;
                 Log.e(TAG, msg);
-                callback.invoke(createJSError(msg));
+                promise.reject("prepare", msg);
                 return;
             }
 
@@ -96,7 +104,7 @@ class RNSoundModule extends ReactContextBaseJavaModule {
             }
             catch (Exception e) {
                 Log.e(TAG, "can't set data source: " + e.toString());
-                callback.invoke(createJSError(e.getMessage()));
+                promise.reject("prepare", "Can't set data source", e);
                 return;
             }
         }
@@ -106,21 +114,12 @@ class RNSoundModule extends ReactContextBaseJavaModule {
             }
             catch (Exception e) {
                 Log.e(TAG, "can't set data source: " + e.toString());
-                callback.invoke(createJSError(e.getMessage()));
+                promise.reject("prepare", "Can't set data source", e);
                 return;
             }
         }
 
-
-        playerPool.put(key, player);
         player.prepareAsync();
-    }
-
-    private WritableMap createJSError(final String message) {
-        WritableMap err = Arguments.createMap();
-        err.putInt("code", -1);
-        err.putString("message", message);
-        return err;
     }
 
     @ReactMethod

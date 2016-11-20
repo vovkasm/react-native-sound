@@ -5,38 +5,31 @@ const resolveAssetSource = require('react-native/Libraries/Image/resolveAssetSou
 const RNSound = NativeModules.RNSound
 const IsAndroid = RNSound.IsAndroid
 
-let nextKey = 0
-
 class Sound {
-  constructor(source, onError) {
-    this._source = resolveAssetSource(source)
-
-    this._loaded = false
-    this._key = nextKey++
-    this._duration = -1
-    this._numberOfChannels = -1
+  constructor(source, props) {
+    this._source = source
+    this._key = props.key
+    this._duration = props.duration
+    this._numberOfChannels = props.numberOfChannels
     this._volume = 1
     this._pan = 0
     this._numberOfLoops = 0
-    RNSound.prepare(this._source, this._key, (error, props) => {
-      if (props) {
-        if (typeof props.duration === 'number') {
-          this._duration = props.duration
-        }
-        if (typeof props.numberOfChannels === 'number') {
-          this._numberOfChannels = props.numberOfChannels
-        }
-      }
-      if (error === null) {
-        this._loaded = true
-      }
-      onError && onError(error)
+  }
+
+  static load(source) {
+    resolvedSource = resolveAssetSource(source)
+    return RNSound.prepare(resolvedSource).then(props => {
+      sound = new Sound(resolvedSource, props)
+      sound._key = props.key
+      sound._duration = props.duration
+      sound._numberOfChannels = props.numberOfChannels
+      return sound
     })
   }
 
-  isLoaded() { return this._loaded }
+  isLoaded() { return this._key !== undefined }
   play(onEnd) {
-    if (this._loaded) {
+    if (this.isLoaded()) {
       RNSound.play(this._key, function(successfully) {
         onEnd && onEnd(successfully)
       })
@@ -44,22 +37,23 @@ class Sound {
     return this
   }
   pause() {
-    if (this._loaded) {
+    if (this.isLoaded()) {
       RNSound.pause(this._key)
     }
     return this
   }
 
   stop() {
-    if (this._loaded) {
+    if (this.isLoaded()) {
       RNSound.stop(this._key)
     }
     return this
   }
 
   release() {
-    if (this._loaded) {
+    if (this.isLoaded()) {
       RNSound.release(this._key)
+      delete this._key
     }
     return this
   }
@@ -72,7 +66,7 @@ class Sound {
 
   setVolume(value) {
     this._volume = value
-    if (this._loaded) {
+    if (this.isLoaded()) {
       RNSound.setVolume(this._key, value)
     }
     return this
@@ -81,7 +75,7 @@ class Sound {
   getPan() { return this._pan }
 
   setPan(value) {
-    if (this._loaded) {
+    if (this.isLoaded()) {
       RNSound.setPan(this._key, this._pan = value)
     }
     return this
@@ -91,7 +85,7 @@ class Sound {
 
   setNumberOfLoops(value) {
     this._numberOfLoops = value
-    if (this._loaded) {
+    if (this.isLoaded()) {
       if (IsAndroid) {
         RNSound.setLooping(this._key, !!value)
       } else {
@@ -102,13 +96,13 @@ class Sound {
   }
 
   getCurrentTime(callback) {
-    if (this._loaded) {
+    if (this.isLoaded()) {
       RNSound.getCurrentTime(this._key, callback)
     }
   }
 
   setCurrentTime(value) {
-    if (this._loaded) {
+    if (this.isLoaded()) {
       RNSound.setCurrentTime(this._key, value)
     }
     return this

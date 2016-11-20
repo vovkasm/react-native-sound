@@ -8,12 +8,11 @@
 @property (nonatomic) NSMutableDictionary* playerPool;
 @property (nonatomic) NSMutableDictionary* callbackPool;
 @property (nonatomic) NSURLSession* urlSession;
+@property (nonatomic) NSUInteger lastKey;
 
 @end
 
-@implementation RNSound {
-  NSURLSession* _urlSession;
-}
+@implementation RNSound
 
 - (instancetype)init {
   self = [super init];
@@ -21,6 +20,7 @@
     _urlSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     _playerPool = [NSMutableDictionary dictionary];
     _callbackPool = [NSMutableDictionary dictionary];
+    _lastKey = 1;
   }
   return self;
 }
@@ -41,8 +41,7 @@
   return [NSSearchPathForDirectoriesInDomains(directory, NSUserDomainMask, YES) firstObject];
 }
 
--(void) audioPlayerDidFinishPlaying:(AVAudioPlayer*)player
-                       successfully:(BOOL)flag {
+-(void) audioPlayerDidFinishPlaying:(AVAudioPlayer*)player successfully:(BOOL)flag {
   NSNumber* key = [self keyForPlayer:player];
   if (key != nil) {
     RCTResponseSenderBlock callback = [self callbackForKey:key];
@@ -94,28 +93,32 @@ RCT_EXPORT_METHOD(enableInSilenceMode:(BOOL)enabled) {
   [session setActive: enabled error: nil];
 }
 
-RCT_EXPORT_METHOD(prepare:(NSDictionary*)source withKey:(nonnull NSNumber*)key
-                  withCallback:(RCTResponseSenderBlock)callback) {
-
+RCT_EXPORT_METHOD(prepare:(NSDictionary*)source resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   NSURLRequest *request = [RCTConvert NSURLRequest:source];
 
   NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
     if (error) {
-      callback(@[RCTJSErrorFromNSError(error)]);
+      reject(@"prepare", @"Can't prepare", error);
       return;
     }
 
     AVAudioPlayer* player = [[AVAudioPlayer alloc] initWithData:data error:&error];
     if (player == nil) {
-      callback(@[RCTJSErrorFromNSError(error)]);
+      reject(@"prepare", @"Can't create player", error);
       return;
     }
 
     player.delegate = self;
     [player prepareToPlay];
-    [[self playerPool] setObject:player forKey:key];
-    callback(@[[NSNull null], @{@"duration": @(player.duration),
-                                @"numberOfChannels": @(player.numberOfChannels)}]);
+
+    NSNumber* key = @(self.lastKey);
+    self.lastKey = self.lastKey + 1;
+    [self.playerPool setObject:player forKey:key];
+    resolve(@{
+              @"key": key,
+              @"duration": @(player.duration),
+              @"numberOfChannels": @(player.numberOfChannels)
+              });
 
   }];
   [task resume];
