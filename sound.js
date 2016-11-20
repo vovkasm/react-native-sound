@@ -42,6 +42,7 @@ class Sound {
       })
     }
   }
+  
   pause() {
     if (this.isLoaded()) {
       RNSound.pause(this._key)
