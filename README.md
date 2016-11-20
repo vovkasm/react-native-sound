@@ -40,13 +40,13 @@ TODO...
 ```js
 import Sound from '@vovkasm/react-native-sound';
 
-const whoosh = new Sound(require('./whoosh.mp3'), (error) => {
-  if (error) {
-    console.log('failed to load the sound', error);
-  } else { // loaded successfully
-    console.log('duration in seconds: ' + whoosh.getDuration() +
-        'number of channels: ' + whoosh.getNumberOfChannels());
-  }
+let whoosh
+Sound.load(require('./whoosh.mp3')).then(player => {
+  whoosh = player
+  console.log('duration in seconds: ' + whoosh.getDuration() +
+      'number of channels: ' + whoosh.getNumberOfChannels());  
+}).catch(error => {
+  console.log('failed to load the sound', error);
 });
 
 // Play the sound with an onEnd callback
@@ -95,7 +95,11 @@ whoosh.release();
 
 TODO... generate automatically from code
 
-## THANKS
+## Author
+
+Vladimir Timofeev
+
+## Thanks
 
 Thanks to Zhen Wang for his hard work! He is author of react-native-sound from which this package was initially forked.
 
