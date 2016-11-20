@@ -178,10 +178,10 @@ class RNSoundModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setVolume(final Integer key, final Float left, final Float right) {
+    public void setVolume(final Integer key, final Float volume) {
         MediaPlayer player = playerPool.get(key);
         if (player != null) {
-            player.setVolume(left, right);
+            player.setVolume(volume, volume);
         }
     }
 

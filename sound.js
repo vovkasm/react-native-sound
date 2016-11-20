@@ -73,11 +73,7 @@ class Sound {
   setVolume(value) {
     this._volume = value
     if (this._loaded) {
-      if (IsAndroid) {
-        RNSound.setVolume(this._key, value, value)
-      } else {
-        RNSound.setVolume(this._key, value)
-      }
+      RNSound.setVolume(this._key, value)
     }
     return this
   }
@@ -135,10 +131,5 @@ Sound.enableInSilenceMode = function(enabled) {
 }
 
 Sound.enable(true)
-
-Sound.MAIN_BUNDLE = RNSound.MainBundlePath
-Sound.DOCUMENT = RNSound.NSDocumentDirectory
-Sound.LIBRARY = RNSound.NSLibraryDirectory
-Sound.CACHES = RNSound.NSCachesDirectory
 
 export default Sound
