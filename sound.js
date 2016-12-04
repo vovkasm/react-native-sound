@@ -1,9 +1,9 @@
 import { NativeModules } from 'react-native'
+import Session from './session'
 
 const resolveAssetSource = require('react-native/Libraries/Image/resolveAssetSource')
 
 const RNSound = NativeModules.RNSound
-const IsAndroid = RNSound.IsAndroid
 
 class Sound {
   static load(source) {
@@ -11,16 +11,6 @@ class Sound {
     return RNSound.prepare(resolvedSource).then(function(props) {
       return new Sound(resolvedSource, props)
     })
-  }
-
-  static enable(enabled) {
-    RNSound.enable(enabled)
-  }
-
-  static enableInSilenceMode(enabled) {
-    if (!IsAndroid) {
-      RNSound.enableInSilenceMode(enabled)
-    }
   }
 
   constructor(source, props) {
@@ -42,7 +32,7 @@ class Sound {
       })
     }
   }
-  
+
   pause() {
     if (this.isLoaded()) {
       RNSound.pause(this._key)
@@ -111,13 +101,6 @@ class Sound {
     }
     return this
   }
-
-  // ios only
-  setCategory(value) {
-    RNSound.setCategory(this._key, value)
-  }
 }
 
-Sound.enable(true)
-
-export default Sound
+export { Session, Sound }
