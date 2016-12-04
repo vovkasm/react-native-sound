@@ -1,5 +1,5 @@
 import { NativeModules } from 'react-native'
-import Session from './session'
+import SoundSession from './soundsession'
 
 const resolveAssetSource = require('react-native/Libraries/Image/resolveAssetSource')
 
@@ -103,4 +103,4 @@ class Sound {
   }
 }
 
-export { Session, Sound }
+export { SoundSession, Sound }
