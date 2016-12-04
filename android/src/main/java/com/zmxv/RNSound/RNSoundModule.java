@@ -210,11 +210,6 @@ class RNSoundModule extends ReactContextBaseJavaModule {
         callback.invoke(player.getCurrentPosition() * .001, player.isPlaying());
     }
 
-    @ReactMethod
-    public void enable(final Boolean enabled) {
-        // stub
-    }
-
     @Override
     public Map<String, Object> getConstants() {
         final Map<String, Object> constants = MapBuilder.newHashMap();
