@@ -6,9 +6,12 @@ const resolveAssetSource = require('react-native/Libraries/Image/resolveAssetSou
 const RNSound = NativeModules.RNSound
 
 class Sound {
-  static load(source) {
+  // Loads the sound from source.
+  // options - optional object
+  // options.androidStreamType - (Android only) Audio stream type, available types: "alarm","dtmf","music" (default), "notification", "ring", "system", "voice_call".
+  static load(source, options) {
     resolvedSource = resolveAssetSource(source)
-    return RNSound.prepare(resolvedSource).then(function(props) {
+    return RNSound.prepare(resolvedSource, options || {}).then(function(props) {
       return new Sound(resolvedSource, props)
     })
   }

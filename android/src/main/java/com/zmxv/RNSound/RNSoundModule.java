@@ -3,6 +3,7 @@ package com.zmxv.RNSound;
 import android.annotation.SuppressLint;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -33,6 +34,20 @@ class RNSoundModule extends ReactContextBaseJavaModule {
 
     private static final String TAG = "RNSound";
 
+    private static final Map<String, Integer> streamTypes = initStreamTypes();
+
+    private static Map<String, Integer> initStreamTypes() {
+        Map<String, Integer> streamTypes = new HashMap<>();
+        streamTypes.put("alarm", AudioManager.STREAM_ALARM);
+        streamTypes.put("dtmf", AudioManager.STREAM_DTMF);
+        streamTypes.put("music", AudioManager.STREAM_MUSIC);
+        streamTypes.put("notification", AudioManager.STREAM_NOTIFICATION);
+        streamTypes.put("ring", AudioManager.STREAM_RING);
+        streamTypes.put("system", AudioManager.STREAM_SYSTEM);
+        streamTypes.put("voice_call", AudioManager.STREAM_VOICE_CALL);
+        return streamTypes;
+    }
+
     RNSoundModule(ReactApplicationContext reactContext) {
         super(reactContext);
     }
@@ -43,12 +58,20 @@ class RNSoundModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void prepare(final ReadableMap source, final Promise promise) {
+    public void prepare(final ReadableMap source, final ReadableMap options, final Promise promise) {
         final Uri uri = Uri.parse(source.getString("uri"));
         lastKey++;
         final int key = lastKey;
 
         MediaPlayer player = new MediaPlayer();
+        int streamType = AudioManager.STREAM_MUSIC;
+        if (options.hasKey("androidStreamType")) {
+            final String sStreamType = options.getString("androidStreamType");
+            if (streamTypes.containsKey(sStreamType)) {
+                streamType = streamTypes.get(sStreamType);
+            }
+        }
+        player.setAudioStreamType(streamType);
         player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
@@ -85,7 +108,7 @@ class RNSoundModule extends ReactContextBaseJavaModule {
             id = res.getIdentifier(name, type, packageName);
             if (id == 0) {
                 // Because strange programmers at Facebook ((
-                // react-native packager copy all types of resources to drawables
+                // react-native (at least in version 0.37) packager copy all types of resources to drawables
                 type = "drawable";
                 id = res.getIdentifier(name, type, packageName);
             }
