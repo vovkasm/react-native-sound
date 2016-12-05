@@ -97,7 +97,7 @@ RCT_EXPORT_METHOD(deactivateSessionIOS:(RCTPromiseResolveBlock)resolve rejecter:
   resolve(@(YES));
 }
 
-RCT_EXPORT_METHOD(prepare:(NSDictionary*)source resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(prepare:(NSDictionary*)source options:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   NSURLRequest *request = [RCTConvert NSURLRequest:source];
 
   NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
