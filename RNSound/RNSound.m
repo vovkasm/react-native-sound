@@ -1,7 +1,8 @@
 #import "RNSound.h"
-#import "RCTConvert.h"
-#import "RCTBridgeModule.h"
-#import "RCTUtils.h"
+
+#import <React/RCTConvert.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTUtils.h>
 
 @interface RNSound () <RCTBridgeModule, AVAudioPlayerDelegate>
 
