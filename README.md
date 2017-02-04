@@ -38,7 +38,7 @@ TODO...
 ## Basic usage
 
 ```js
-import Sound from '@vovkasm/react-native-sound';
+import {Sound} from '@vovkasm/react-native-sound';
 
 let whoosh
 Sound.load(require('./whoosh.mp3')).then(player => {
