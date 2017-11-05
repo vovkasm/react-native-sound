@@ -8,19 +8,26 @@
 
 @property (nonatomic) NSMutableDictionary* playerPool;
 @property (nonatomic) NSMutableDictionary* callbackPool;
-@property (nonatomic) NSURLSession* urlSession;
+@property (nonatomic, readonly) NSURLSession* urlSession;
 
 @property (nonatomic) NSUInteger lastKey;
 @property (nonatomic) NSDictionary<NSString*,NSString*>* categoryParamsMap;
 
 @end
 
-@implementation RNSound
+@implementation RNSound {
+  NSURLSession* _urlSession;
+}
+
+@synthesize methodQueue = _methodQueue;
+
++ (BOOL)requiresMainQueueSetup {
+  return NO;
+}
 
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _urlSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     _playerPool = [NSMutableDictionary dictionary];
     _callbackPool = [NSMutableDictionary dictionary];
 
@@ -35,6 +42,13 @@
                            };
   }
   return self;
+}
+
+- (NSURLSession *)urlSession {
+  if (_urlSession) return _urlSession;
+  NSURLSessionConfiguration* conf = [NSURLSessionConfiguration defaultSessionConfiguration];
+  _urlSession = [NSURLSession sessionWithConfiguration:conf];
+  return _urlSession;
 }
 
 -(AVAudioPlayer*) playerForKey:(nonnull NSNumber*)key {
@@ -101,7 +115,7 @@ RCT_EXPORT_METHOD(deactivateSessionIOS:(RCTPromiseResolveBlock)resolve rejecter:
 RCT_EXPORT_METHOD(prepare:(NSDictionary*)source options:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   NSURLRequest *request = [RCTConvert NSURLRequest:source];
 
-  NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+  NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
     if (error) {
       reject(@"prepare", @"Can't prepare", error);
       return;
