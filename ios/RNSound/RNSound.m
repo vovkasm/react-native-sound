@@ -4,6 +4,45 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTUtils.h>
 
+#pragma mark RCTConvert
+
+@interface RCTConvert (RNSound)
+
++ (NSString*)AVAudioSessionCategory:(id)json;
+
+@end
+
+@implementation RCTConvert (RNSound)
+
++ (NSString *)AVAudioSessionCategory:(id)json {
+  NSString* category = nil;
+  if (json != nil && [json isKindOfClass:NSString.class]) {
+    category = self.categoryParamsMap[json];
+  }
+  if (category == nil) category = AVAudioSessionCategoryAmbient;
+  return category;
+}
+
++ (NSDictionary*)categoryParamsMap {
+  static NSDictionary* map = nil;
+  static dispatch_once_t once;
+  dispatch_once(&once, ^{
+    map = @{
+            @"ambient": AVAudioSessionCategoryAmbient,
+            @"soloAmbient": AVAudioSessionCategorySoloAmbient,
+            @"playback": AVAudioSessionCategoryPlayback,
+            @"record": AVAudioSessionCategoryRecord,
+            @"playAndRecord": AVAudioSessionCategoryPlayAndRecord,
+            @"multiRoute": AVAudioSessionCategoryMultiRoute
+            };
+  });
+  return map;
+}
+
+@end
+
+#pragma mark RNSound
+
 @interface RNSound () <RCTBridgeModule, AVAudioPlayerDelegate>
 
 @property (nonatomic) NSMutableDictionary* playerPool;
@@ -11,7 +50,6 @@
 @property (nonatomic, readonly) NSURLSession* urlSession;
 
 @property (nonatomic) NSUInteger lastKey;
-@property (nonatomic) NSDictionary<NSString*,NSString*>* categoryParamsMap;
 
 @end
 
@@ -32,14 +70,6 @@
     _callbackPool = [NSMutableDictionary dictionary];
 
     _lastKey = 1;
-    _categoryParamsMap = @{
-                           @"ambient": AVAudioSessionCategoryAmbient,
-                           @"soloAmbient": AVAudioSessionCategorySoloAmbient,
-                           @"playback": AVAudioSessionCategoryPlayback,
-                           @"record": AVAudioSessionCategoryRecord,
-                           @"playAndRecord": AVAudioSessionCategoryPlayAndRecord,
-                           @"multiRoute": AVAudioSessionCategoryMultiRoute
-                           };
   }
   return self;
 }
@@ -80,15 +110,10 @@
 RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(activateSessionIOS:(NSString*)category resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  NSString* avCategory = [RCTConvert AVAudioSessionCategory:category];
   AVAudioSession *session = [AVAudioSession sharedInstance];
-  NSString* avCategory = nil;
+
   NSError* error = nil;
-  if (category != nil) {
-    avCategory = self.categoryParamsMap[category];
-  }
-  if (avCategory == nil) {
-    avCategory = AVAudioSessionCategoryAmbient;
-  }
   if (session.category != avCategory) {
     if ([session setCategory:avCategory error:&error] != YES) {
       reject(@"enable", @"can't set category", error);
