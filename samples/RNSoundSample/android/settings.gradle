@@ -1,0 +1,5 @@
+rootProject.name = 'RNSoundSample'
+
+include ':app'
+include ':react-native-sound'
+project(':react-native-sound').projectDir = new File(rootProject.projectDir, '../../../android')

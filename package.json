@@ -4,6 +4,12 @@
   "description": "React Native module for playing sound on iOS and Android",
   "main": "sound.js",
   "homepage": "https://github.com/vovkasm/react-native-sound",
+  "scripts": {
+    "start": "npm run start-sample --",
+    "start-sample": "node rn-wrapper.js start --projectRoots samples/RNSoundSample,.",
+    "run-sample-android": "react-native run-android --root samples/RNSoundSample",
+    "run-sample-ios": "react-native run-ios --project-path samples/RNSoundSample/ios"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/vovkasm/react-native-sound.git"
@@ -19,14 +25,18 @@
   "peerDependencies": {
     "react-native": ">=0.40.0"
   },
+  "dependencies": {
+    "prop-types": "^15.5.10"
+  },
   "devDependencies": {
-    "babel-eslint": "^7.0.0",
-    "babel-preset-react-native": "^1.9.0",
-    "eslint": "^3.3.1",
+    "babel-eslint": "^8.0.0",
+    "babel-preset-react-native": "^4.0.0",
+    "eslint": "^4.5.0",
     "eslint-plugin-classes": "^0.1.1",
     "eslint-plugin-import": "^2.0",
     "eslint-plugin-react": "^6.1.2",
     "eslint-plugin-react-native": "^2.0.0",
-    "react-native": "^0.37.0"
+    "react": "16.0.0",
+    "react-native": "0.50.1"
   }
 }
