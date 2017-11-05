@@ -2,6 +2,6 @@
 
 module.exports = {
   extraNodeModules: {
-    'react-native-web-image': __dirname
+    '@vovkasm/react-native-sound': __dirname
   }
 }
