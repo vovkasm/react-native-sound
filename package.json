@@ -10,6 +10,15 @@
     "run-sample-android": "react-native run-android --root samples/RNSoundSample",
     "run-sample-ios": "react-native run-ios --project-path samples/RNSoundSample/ios"
   },
+  "files": [
+    "android/src",
+    "android/build.gradle",
+    "ios/RNSound",
+    "ios/RNSound.xcodeproj/project.pbxproj",
+    "src",
+    ".babelrc",
+    "RNSound.podspec"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/vovkasm/react-native-sound.git"
