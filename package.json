@@ -2,7 +2,7 @@
   "name": "@vovkasm/react-native-sound",
   "version": "0.0.1",
   "description": "React Native module for playing sound on iOS and Android",
-  "main": "sound.js",
+  "main": "src/sound.js",
   "homepage": "https://github.com/vovkasm/react-native-sound",
   "scripts": {
     "start": "npm run start-sample --",
