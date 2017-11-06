@@ -90,23 +90,23 @@
   return _urlSession;
 }
 
--(AVAudioPlayer*) playerForKey:(nonnull NSNumber*)key {
-  return [[self playerPool] objectForKey:key];
+-(AVAudioPlayer*)playerForKey:(nonnull NSNumber*)key {
+  return self.playerPool[key];
 }
 
--(NSNumber*) keyForPlayer:(nonnull AVAudioPlayer*)player {
-  return [[[self playerPool] allKeysForObject:player] firstObject];
+-(NSNumber*)keyForPlayer:(nonnull AVAudioPlayer*)player {
+  return [[self.playerPool allKeysForObject:player] firstObject];
 }
 
--(RCTResponseSenderBlock) callbackForKey:(nonnull NSNumber*)key {
-  return [[self callbackPool] objectForKey:key];
+-(RCTResponseSenderBlock)callbackForKey:(nonnull NSNumber*)key {
+  return self.callbackPool[key];
 }
 
--(NSString *) getDirectory:(int)directory {
+-(NSString *)getDirectory:(int)directory {
   return [NSSearchPathForDirectoriesInDomains(directory, NSUserDomainMask, YES) firstObject];
 }
 
--(void) audioPlayerDidFinishPlaying:(AVAudioPlayer*)player successfully:(BOOL)flag {
+-(void)audioPlayerDidFinishPlaying:(AVAudioPlayer*)player successfully:(BOOL)flag {
   NSNumber* key = [self keyForPlayer:player];
   if (key != nil) {
     RCTResponseSenderBlock callback = [self callbackForKey:key];
