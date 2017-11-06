@@ -4,56 +4,109 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTUtils.h>
 
+#pragma mark RCTConvert
+
+@interface RCTConvert (RNSound)
+
++ (NSString*)AVAudioSessionCategory:(id)json;
+
+@end
+
+@implementation RCTConvert (RNSound)
+
++ (NSString *)AVAudioSessionCategory:(id)json {
+  NSString* category = nil;
+  if (json != nil && [json isKindOfClass:NSString.class]) {
+    category = self.categoryParamsMap[json];
+  }
+  if (category == nil) category = AVAudioSessionCategoryAmbient;
+  return category;
+}
+
++ (NSDictionary*)categoryParamsMap {
+  static NSDictionary* map = nil;
+  static dispatch_once_t once;
+  dispatch_once(&once, ^{
+    map = @{
+            @"ambient": AVAudioSessionCategoryAmbient,
+            @"soloAmbient": AVAudioSessionCategorySoloAmbient,
+            @"playback": AVAudioSessionCategoryPlayback,
+            @"record": AVAudioSessionCategoryRecord,
+            @"playAndRecord": AVAudioSessionCategoryPlayAndRecord,
+            @"multiRoute": AVAudioSessionCategoryMultiRoute
+            };
+  });
+  return map;
+}
+
+@end
+
+#pragma mark RNSound
+
 @interface RNSound () <RCTBridgeModule, AVAudioPlayerDelegate>
 
 @property (nonatomic) NSMutableDictionary* playerPool;
 @property (nonatomic) NSMutableDictionary* callbackPool;
-@property (nonatomic) NSURLSession* urlSession;
+@property (nonatomic, readonly) NSURLSession* urlSession;
+@property (nonatomic, readonly) NSOperationQueue* operationQueue;
 
 @property (nonatomic) NSUInteger lastKey;
-@property (nonatomic) NSDictionary<NSString*,NSString*>* categoryParamsMap;
 
 @end
 
-@implementation RNSound
+@implementation RNSound {
+  NSOperationQueue* _operationQueue;
+  NSURLSession* _urlSession;
+}
+
+@synthesize methodQueue = _methodQueue;
+
++ (BOOL)requiresMainQueueSetup {
+  return NO;
+}
 
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _urlSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     _playerPool = [NSMutableDictionary dictionary];
     _callbackPool = [NSMutableDictionary dictionary];
 
     _lastKey = 1;
-    _categoryParamsMap = @{
-                           @"ambient": AVAudioSessionCategoryAmbient,
-                           @"soloAmbient": AVAudioSessionCategorySoloAmbient,
-                           @"playback": AVAudioSessionCategoryPlayback,
-                           @"record": AVAudioSessionCategoryRecord,
-                           @"playAndRecord": AVAudioSessionCategoryPlayAndRecord,
-                           @"multiRoute": AVAudioSessionCategoryMultiRoute
-                           };
   }
   return self;
 }
 
--(AVAudioPlayer*) playerForKey:(nonnull NSNumber*)key {
-  return [[self playerPool] objectForKey:key];
+- (NSOperationQueue*)operationQueue {
+  if (_operationQueue) return _operationQueue;
+  _operationQueue = [[NSOperationQueue alloc] init];
+  _operationQueue.underlyingQueue = self.methodQueue;
+  return _operationQueue;
 }
 
--(NSNumber*) keyForPlayer:(nonnull AVAudioPlayer*)player {
-  return [[[self playerPool] allKeysForObject:player] firstObject];
+- (NSURLSession *)urlSession {
+  if (_urlSession) return _urlSession;
+  NSURLSessionConfiguration* conf = [NSURLSessionConfiguration defaultSessionConfiguration];
+  _urlSession = [NSURLSession sessionWithConfiguration:conf delegate:nil delegateQueue:self.operationQueue];
+  return _urlSession;
 }
 
--(RCTResponseSenderBlock) callbackForKey:(nonnull NSNumber*)key {
-  return [[self callbackPool] objectForKey:key];
+-(AVAudioPlayer*)playerForKey:(nonnull NSNumber*)key {
+  return self.playerPool[key];
 }
 
--(NSString *) getDirectory:(int)directory {
+-(NSNumber*)keyForPlayer:(nonnull AVAudioPlayer*)player {
+  return [[self.playerPool allKeysForObject:player] firstObject];
+}
+
+-(RCTResponseSenderBlock)callbackForKey:(nonnull NSNumber*)key {
+  return self.callbackPool[key];
+}
+
+-(NSString *)getDirectory:(int)directory {
   return [NSSearchPathForDirectoriesInDomains(directory, NSUserDomainMask, YES) firstObject];
 }
 
--(void) audioPlayerDidFinishPlaying:(AVAudioPlayer*)player successfully:(BOOL)flag {
+-(void)audioPlayerDidFinishPlaying:(AVAudioPlayer*)player successfully:(BOOL)flag {
   NSNumber* key = [self keyForPlayer:player];
   if (key != nil) {
     RCTResponseSenderBlock callback = [self callbackForKey:key];
@@ -66,15 +119,10 @@
 RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(activateSessionIOS:(NSString*)category resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  NSString* avCategory = [RCTConvert AVAudioSessionCategory:category];
   AVAudioSession *session = [AVAudioSession sharedInstance];
-  NSString* avCategory = nil;
+
   NSError* error = nil;
-  if (category != nil) {
-    avCategory = self.categoryParamsMap[category];
-  }
-  if (avCategory == nil) {
-    avCategory = AVAudioSessionCategoryAmbient;
-  }
   if (session.category != avCategory) {
     if ([session setCategory:avCategory error:&error] != YES) {
       reject(@"enable", @"can't set category", error);
@@ -101,7 +149,7 @@ RCT_EXPORT_METHOD(deactivateSessionIOS:(RCTPromiseResolveBlock)resolve rejecter:
 RCT_EXPORT_METHOD(prepare:(NSDictionary*)source options:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   NSURLRequest *request = [RCTConvert NSURLRequest:source];
 
-  NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+  NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
     if (error) {
       reject(@"prepare", @"Can't prepare", error);
       return;
