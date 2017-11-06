@@ -48,12 +48,14 @@
 @property (nonatomic) NSMutableDictionary* playerPool;
 @property (nonatomic) NSMutableDictionary* callbackPool;
 @property (nonatomic, readonly) NSURLSession* urlSession;
+@property (nonatomic, readonly) NSOperationQueue* operationQueue;
 
 @property (nonatomic) NSUInteger lastKey;
 
 @end
 
 @implementation RNSound {
+  NSOperationQueue* _operationQueue;
   NSURLSession* _urlSession;
 }
 
@@ -74,10 +76,17 @@
   return self;
 }
 
+- (NSOperationQueue*)operationQueue {
+  if (_operationQueue) return _operationQueue;
+  _operationQueue = [[NSOperationQueue alloc] init];
+  _operationQueue.underlyingQueue = self.methodQueue;
+  return _operationQueue;
+}
+
 - (NSURLSession *)urlSession {
   if (_urlSession) return _urlSession;
   NSURLSessionConfiguration* conf = [NSURLSessionConfiguration defaultSessionConfiguration];
-  _urlSession = [NSURLSession sessionWithConfiguration:conf];
+  _urlSession = [NSURLSession sessionWithConfiguration:conf delegate:nil delegateQueue:self.operationQueue];
   return _urlSession;
 }
 
