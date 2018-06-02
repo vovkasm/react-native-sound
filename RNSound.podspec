@@ -15,7 +15,8 @@ Pod::Spec.new do |s|
   s.platform            = :ios, "7.0"
 
   s.subspec 'Core' do |ss|
-    ss.source_files     = "ios/RNSound/*.{h,m}"
+    ss.source_files     = 'ios/RNSound/*.{h,m}'
+    ss.dependecy        = 'React'
   end
 
 end
