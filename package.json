@@ -5,8 +5,7 @@
   "main": "src/sound.js",
   "homepage": "https://github.com/vovkasm/react-native-sound",
   "scripts": {
-    "start": "npm run start-sample --",
-    "start-sample": "node rn-wrapper.js start --projectRoots samples/RNSoundSample,.",
+    "start": "react-native start",
     "run-sample-android": "react-native run-android --root samples/RNSoundSample",
     "run-sample-ios": "react-native run-ios --project-path samples/RNSoundSample/ios"
   },

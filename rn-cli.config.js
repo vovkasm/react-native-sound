@@ -1,7 +1,13 @@
 'use strict'
+const path = require('path')
 
 module.exports = {
-  extraNodeModules: {
-    '@vovkasm/react-native-sound': __dirname
+  projectRoot: path.resolve(__dirname, 'samples/RNSoundSample'),
+  watchFolders: [__dirname],
+
+  resolver: {
+    extraNodeModules: {
+      '@vovkasm/react-native-sound': __dirname
+    }
   }
 }
