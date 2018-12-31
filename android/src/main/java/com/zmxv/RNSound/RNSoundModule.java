@@ -91,10 +91,9 @@ class RNSoundModule extends ReactContextBaseJavaModule {
             }
         });
 
-        String dataSourceUriString = uri.toString();
         if (uri.isRelative()) {
             String name = uri.getPath();
-            if (name.indexOf(".") > 0) {
+            if (name != null && name.indexOf(".") > 0) {
                 name = name.substring(0, name.lastIndexOf("."));
             }
 
@@ -103,7 +102,7 @@ class RNSoundModule extends ReactContextBaseJavaModule {
 
             final String packageName = context.getPackageName();
             String type = "raw";
-            int id = 0;
+            int id;
 
             id = res.getIdentifier(name, type, packageName);
             if (id == 0) {
